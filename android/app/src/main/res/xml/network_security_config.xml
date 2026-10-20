@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Le flux live n'est disponible qu'en HTTP : exception limitée à ce domaine. -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">kgsols.com</domain>
+    </domain-config>
+</network-security-config>

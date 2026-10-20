@@ -1,0 +1,46 @@
+# Codemagic : https://codemagic.io — connecter ce dépôt puis lancer un workflow.
+workflows:
+  android:
+    name: Android (APK)
+    instance_type: mac_mini_m2
+    environment:
+      flutter: stable
+      java: 17
+    scripts:
+      - name: Dépendances
+        script: flutter pub get
+      - name: Icônes et écran de démarrage
+        script: |
+          dart run flutter_launcher_icons
+          dart run flutter_native_splash:create
+      - name: Analyse et tests
+        script: |
+          flutter analyze
+          flutter test
+      - name: Build APK
+        script: flutter build apk --release
+    artifacts:
+      - build/app/outputs/flutter-apk/*.apk
+
+  ios:
+    name: iOS (non signé)
+    instance_type: mac_mini_m2
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    # Pour publier sur l'App Store : ajouter ici l'intégration App Store Connect
+    # (ios_signing + publishing.app_store_connect) une fois le compte Apple Developer prêt.
+    scripts:
+      - name: Dépendances
+        script: flutter pub get
+      - name: Icônes et écran de démarrage
+        script: |
+          dart run flutter_launcher_icons
+          dart run flutter_native_splash:create
+      - name: Pods
+        script: cd ios && pod install --repo-update
+      - name: Build iOS
+        script: flutter build ios --release --no-codesign
+    artifacts:
+      - build/ios/iphoneos/*.app
