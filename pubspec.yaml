@@ -39,6 +39,13 @@ dependencies:
   webview_flutter: ^4.10.0
   url_launcher: ^6.3.1
   wakelock_plus: ^1.2.8
+  shared_preferences: ^2.5.6
+  image_picker: ^1.2.4
+  path_provider: ^2.1.6
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.3
+  http: ^1.6.0
 
 dev_dependencies:
   flutter_test:
@@ -57,16 +64,22 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/logo_dialaw.jpg"
+  # Logo DTV ; images 1024 générées depuis assets/icon/dtv_logo_source.jpg.
+  image_path: "assets/icon/app_icon.png"
   remove_alpha_ios: true
+  # Android 8+ : icône adaptative (le logo reste dans la zone jamais rognée).
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/icon/app_icon_foreground.png"
 
 # Générer l'écran de démarrage : dart run flutter_native_splash:create
 flutter_native_splash:
+  # Logo DTV centré ; images générées depuis assets/icon/dtv_logo_source.jpg.
   color: "#FFFFFF"
-  image: "assets/logo_dialaw.jpg"
+  image: "assets/splash/splash_logo.png"
   android_12:
+    # Android 12+ découpe l'icône en cercle : logo dans le cercle central.
     color: "#FFFFFF"
-    image: "assets/logo_dialaw.jpg"
+    image: "assets/splash/splash_android12.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

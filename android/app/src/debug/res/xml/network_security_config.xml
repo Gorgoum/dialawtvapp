@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Version de DÉBOGAGE uniquement (remplace celle de src/main) : autorise en plus un
+     serveur d'abonnement local (adb reverse) pour les tests. La version publiée garde
+     la configuration de src/main, limitée au flux du direct. -->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">kgsols.com</domain>
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">127.0.0.1</domain>
+    </domain-config>
+</network-security-config>

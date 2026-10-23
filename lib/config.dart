@@ -8,6 +8,12 @@ class AppConfig {
   static const liveStreamUrl =
       'http://livestream.kgsols.com/push/DialawTV/playlist.m3u8';
 
+  /// Serveur des abonnements (dossier server/, déployé sur Vercel), sans « / » final.
+  /// Vide : abonnement désactivé, le direct reste gratuit pour tous.
+  /// Remplaçable à la compilation : --dart-define=API_BASE_URL=https://…
+  // TODO: mettre l'adresse Vercel en valeur par défaut une fois le serveur déployé.
+  static const apiBaseUrl = String.fromEnvironment('API_BASE_URL');
+
   static const newsUrl = 'https://dialawactu.com';
   static const newsHost = 'dialawactu.com';
 
@@ -18,12 +24,14 @@ class AppConfig {
   /// Contacts affichés sur la page Contacts. Une valeur vide masque l'entrée.
   // TODO: renseigner les vrais contacts de Dialaw TV.
   static const phone = '';
-  static const whatsapp =
-      ''; // numéro international sans « + », ex. 221770000000
+
+  /// WhatsApp de l'admin : reçoit aussi les demandes de couverture.
+  static const whatsapp = '221772197773'; // international, sans « + »
   static const email = '';
-  static const facebook = '';
+  static const facebook =
+      'https://www.facebook.com/profile.php?id=100064379100371';
   static const youtube = '';
-  static const tiktok = '';
+  static const tiktok = 'https://www.tiktok.com/@dialawtv';
   static const instagram = '';
   static const twitter = '';
 }

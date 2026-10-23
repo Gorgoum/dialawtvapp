@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../config.dart';
+import '../theme.dart';
 
 /// Site dialawactu.com. Les liens vers d'autres domaines s'ouvrent dans le navigateur.
 class NewsPage extends StatefulWidget {
@@ -31,8 +32,9 @@ class NewsPageState extends State<NewsPage> {
           },
           onNavigationRequest: (request) {
             final uri = Uri.tryParse(request.url);
-            if (uri == null || _isInternal(uri))
+            if (uri == null || _isInternal(uri)) {
               return NavigationDecision.navigate;
+            }
             launchUrl(uri, mode: LaunchMode.externalApplication);
             return NavigationDecision.prevent;
           },
@@ -48,6 +50,10 @@ class NewsPageState extends State<NewsPage> {
     return true;
   }
 
+  Future<void> reload() => _controller.reload();
+
+  Future<String?> currentUrl() => _controller.currentUrl();
+
   bool _isInternal(Uri uri) {
     if (uri.scheme != 'http' && uri.scheme != 'https') return false;
     return uri.host == AppConfig.newsHost ||
@@ -60,24 +66,49 @@ class NewsPageState extends State<NewsPage> {
       children: [
         if (_failed)
           Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.cloud_off, size: 48, color: Colors.grey),
-                const SizedBox(height: 8),
-                const Text('Impossible de charger les actualités.'),
-                const SizedBox(height: 8),
-                FilledButton(
-                  onPressed: _controller.reload,
-                  child: const Text('Réessayer'),
-                ),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: context.palette.surface,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.cloud_off,
+                      size: 40,
+                      color: context.palette.textMuted,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Impossible de charger les actualités',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Vérifiez votre connexion puis réessayez.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: context.palette.textMuted),
+                  ),
+                  const SizedBox(height: 20),
+                  FilledButton.icon(
+                    onPressed: _controller.reload,
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Réessayer'),
+                  ),
+                ],
+              ),
             ),
           )
         else
           WebViewWidget(controller: _controller),
         if (_progress < 100 && !_failed)
-          LinearProgressIndicator(value: _progress / 100, color: AppConfig.red),
+          LinearProgressIndicator(value: _progress / 100, minHeight: 3),
       ],
     );
   }
