@@ -19,6 +19,7 @@ class LivePage extends StatefulWidget {
     this.locked = false,
     this.accessNote,
     this.onSubscribe,
+    this.paymentPending = false,
   });
 
   final bool active;
@@ -32,6 +33,9 @@ class LivePage extends StatefulWidget {
   /// Ex. « Essai gratuit : 12 jours restants », affiché sous le titre.
   final String? accessNote;
   final VoidCallback? onSubscribe;
+
+  /// Paiement envoyé, en attente de validation par un admin.
+  final bool paymentPending;
 
   @override
   State<LivePage> createState() => _LivePageState();
@@ -232,7 +236,10 @@ class _LivePageState extends State<LivePage> with WidgetsBindingObserver {
   Widget _player({double radius = 0}) {
     final Widget content;
     if (widget.locked) {
-      content = _LockedView(onSubscribe: widget.onSubscribe);
+      content = _LockedView(
+        onSubscribe: widget.onSubscribe,
+        pending: widget.paymentPending,
+      );
     } else if (_loading) {
       content = const Center(
         child: CircularProgressIndicator(color: Colors.white),
@@ -466,9 +473,10 @@ class _ErrorView extends StatelessWidget {
 
 /// Remplace le lecteur quand l'essai est terminé sans abonnement.
 class _LockedView extends StatelessWidget {
-  const _LockedView({required this.onSubscribe});
+  const _LockedView({required this.onSubscribe, this.pending = false});
 
   final VoidCallback? onSubscribe;
+  final bool pending;
 
   @override
   Widget build(BuildContext context) {
@@ -481,10 +489,16 @@ class _LockedView extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.lock_outline, color: Colors.white, size: 36),
+              Icon(
+                pending ? Icons.hourglass_top : Icons.lock_outline,
+                color: Colors.white,
+                size: 36,
+              ),
               const SizedBox(height: 10),
-              const Text(
-                'Votre mois gratuit est terminé',
+              Text(
+                pending
+                    ? 'Paiement en cours de vérification'
+                    : 'Votre mois gratuit est terminé',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -492,15 +506,21 @@ class _LockedView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
-                'Abonnez-vous pour continuer à suivre le direct.',
+              Text(
+                pending
+                    ? 'Le direct reviendra dès que Dialaw TV aura validé votre paiement.'
+                    : 'Abonnez-vous pour continuer à suivre le direct.',
                 style: TextStyle(color: Colors.white70),
               ),
               const SizedBox(height: 14),
               FilledButton.icon(
                 onPressed: onSubscribe,
                 icon: const Icon(Icons.play_circle_outline),
-                label: const Text('S’abonner – dès 1 000 FCFA/mois'),
+                label: Text(
+                  pending
+                      ? 'Voir mon abonnement'
+                      : 'S’abonner – dès 1 000 FCFA/mois',
+                ),
               ),
             ],
           ),

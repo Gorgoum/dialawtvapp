@@ -15,8 +15,14 @@ services:
     envVars:
       - key: NODE_VERSION
         value: "22"
+      # Signature des sessions de l'espace admin : générée par Render.
+      - key: SESSION_SECRET
+        generateValue: true
       # Valeurs secrètes : demandées par Render à la création, jamais dans Git.
       - key: DATABASE_URL
+        sync: false
+      # Mot de passe du propriétaire : se connecter à /admin pour nommer les admins.
+      - key: ADMIN_MASTER_PASSWORD
         sync: false
       - key: WAVE_API_KEY
         sync: false

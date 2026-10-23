@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -24,6 +25,40 @@ enum Plan {
 
 enum AccessStatus { trial, active, expired }
 
+/// Paiement par lien Wave : en attente de validation, validé ou refusé par un admin.
+enum PaymentStatus { pending, succeeded, rejected, failed }
+
+class LastPayment {
+  const LastPayment({
+    required this.plan,
+    required this.amount,
+    required this.status,
+    required this.createdAt,
+  });
+
+  static LastPayment? fromJson(Map<String, dynamic>? json) {
+    if (json == null) return null;
+    return LastPayment(
+      plan: json['plan'] as String,
+      amount: json['amount'] as int,
+      status: PaymentStatus.values.byName(json['status'] as String),
+      createdAt: DateTime.parse(json['createdAt'] as String).toLocal(),
+    );
+  }
+
+  final String plan;
+  final int amount;
+  final PaymentStatus status;
+  final DateTime createdAt;
+
+  Map<String, dynamic> toJson() => {
+    'plan': plan,
+    'amount': amount,
+    'status': status.name,
+    'createdAt': createdAt.toUtc().toIso8601String(),
+  };
+}
+
 /// Réponse de POST /api/access.
 class AccessInfo {
   const AccessInfo({
@@ -31,6 +66,7 @@ class AccessInfo {
     required this.trialEndsAt,
     required this.paidUntil,
     required this.accessUntil,
+    this.lastPayment,
   });
 
   factory AccessInfo.fromJson(Map<String, dynamic> json) {
@@ -42,6 +78,9 @@ class AccessInfo {
       trialEndsAt: date('trialEndsAt')!,
       paidUntil: date('paidUntil'),
       accessUntil: date('accessUntil'),
+      lastPayment: LastPayment.fromJson(
+        json['lastPayment'] as Map<String, dynamic>?,
+      ),
     );
   }
 
@@ -49,12 +88,16 @@ class AccessInfo {
   final DateTime trialEndsAt;
   final DateTime? paidUntil;
   final DateTime? accessUntil;
+  final LastPayment? lastPayment;
+
+  bool get paymentPending => lastPayment?.status == PaymentStatus.pending;
 
   Map<String, dynamic> toJson() => {
     'status': status.name,
     'trialEndsAt': trialEndsAt.toUtc().toIso8601String(),
     'paidUntil': paidUntil?.toUtc().toIso8601String(),
     'accessUntil': accessUntil?.toUtc().toIso8601String(),
+    'lastPayment': lastPayment?.toJson(),
   };
 }
 
@@ -193,14 +236,18 @@ class SubscriptionService extends ChangeNotifier {
     }
   }
 
-  /// Crée le paiement et renvoie le lien qui ouvre Wave.
-  Future<Uri> startCheckout(Plan plan) async {
+  /// Enregistre le paiement à venir (formule + numéro Wave du payeur) et renvoie
+  /// le lien Wave Business, montant pré-rempli. Un admin valide ensuite le paiement.
+  Future<Uri> startPayment(Plan plan, String payerPhone) async {
     try {
-      final data = await _post('/api/checkout', {
+      final data = await _post('/api/payment-claim', {
         'deviceId': deviceId,
         'plan': plan.id,
+        'payerPhone': payerPhone,
       });
-      return Uri.parse(data['launchUrl'] as String);
+      // Le paiement « en attente » apparaît tout de suite dans l'appli.
+      unawaited(refresh());
+      return Uri.parse(data['payUrl'] as String);
     } on SubscriptionException {
       rethrow;
     } catch (_) {

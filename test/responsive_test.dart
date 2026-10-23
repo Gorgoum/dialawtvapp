@@ -113,7 +113,19 @@ void main() {
           'Essai gratuit : 12 jours restants. Abonnez-vous dès 1 000 FCFA/mois',
       onSubscribe: () {},
     ),
-    'Mon abonnement': () => SubscriptionPage(subscription: subscription),
+    'Mon abonnement': () => SubscriptionPage(
+      subscription: subscription,
+      defaultPhone: '77 000 00 00',
+    ),
+    'Direct en attente de validation': () => LivePage(
+      active: false,
+      onOpenNews: () {},
+      onOpenContacts: () {},
+      onRequestCoverage: () {},
+      locked: true,
+      paymentPending: true,
+      onSubscribe: () {},
+    ),
     'Paramètres avec abonnement': () =>
         SettingsPage(settings: settings, subscription: subscription),
   };

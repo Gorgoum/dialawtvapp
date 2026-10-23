@@ -111,37 +111,70 @@ void main() {
   });
 
   test(
-    'paiement : le lien Wave est renvoyé, les erreurs sont lisibles',
+    'paiement : numéro Wave envoyé, lien Wave renvoyé, erreurs lisibles',
     () async {
+      late Map<String, dynamic> claim;
       final sub = await SubscriptionService.load(
         baseUrl: _api,
         client: _server((r) {
-          final body = jsonDecode(r.body);
-          if (body['plan'] == 'yearly') {
+          if (r.url.path == '/api/access') {
+            return _access('trial', until: const Duration(days: 3));
+          }
+          expect(r.url.path, '/api/payment-claim');
+          claim = jsonDecode(r.body);
+          if (claim['plan'] == 'yearly') {
             return {
               'paymentId': 'p1',
-              'launchUrl': 'https://pay.wave.com/c/cos-123',
+              'payUrl': 'https://pay.wave.com/m/M_sn_x/c/sn/?amount=10000',
             };
           }
-          return {'error': 'Wave indisponible, réessayez.'};
+          return {'error': 'Numéro Wave invalide (ex. : 77 123 45 67).'};
         }),
       );
       expect(
-        (await sub.startCheckout(Plan.yearly)).toString(),
-        'https://pay.wave.com/c/cos-123',
+        (await sub.startPayment(Plan.yearly, '77 123 45 67')).toString(),
+        'https://pay.wave.com/m/M_sn_x/c/sn/?amount=10000',
       );
+      expect(claim['payerPhone'], '77 123 45 67');
+      expect(claim['deviceId'], sub.deviceId);
       expect(
-        () => sub.startCheckout(Plan.monthly),
+        () => sub.startPayment(Plan.monthly, '123'),
         throwsA(
           isA<SubscriptionException>().having(
             (e) => e.message,
             'message',
-            'Wave indisponible, réessayez.',
+            'Numéro Wave invalide (ex. : 77 123 45 67).',
           ),
         ),
       );
     },
   );
+
+  test('paiement en attente de validation : lu et mémorisé', () async {
+    final online = await SubscriptionService.load(
+      baseUrl: _api,
+      client: _server(
+        (_) => {
+          ..._access('trial', until: const Duration(days: 3)),
+          'lastPayment': {
+            'plan': 'monthly',
+            'amount': 1000,
+            'status': 'pending',
+            'createdAt': _iso(const Duration(minutes: -5)),
+          },
+        },
+      ),
+    );
+    await online.refresh();
+    expect(online.info!.paymentPending, isTrue);
+    expect(online.info!.lastPayment!.amount, 1000);
+
+    final offline = await SubscriptionService.load(
+      baseUrl: _api,
+      client: MockClient((_) async => throw http.ClientException('hors ligne')),
+    );
+    expect(offline.info!.lastPayment!.status, PaymentStatus.pending);
+  });
 
   test('tarifs affichés identiques à ceux du serveur', () {
     expect(Plan.monthly.amount, 1000);

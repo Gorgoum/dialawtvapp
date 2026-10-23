@@ -13,6 +13,26 @@ Petit serveur entre l'application, la base **Neon** et **Wave Business** :
 | `POST /api/wave-webhook` | Reçu de Wave quand un paiement est terminé (signature vérifiée) |
 | `GET /api/paiement` | Page affichée après le paiement |
 | `GET /health` | Sonde de santé de Render |
+| `POST /api/payment-claim` | **Mode actuel** : enregistre « je paie telle formule avec tel numéro Wave » et renvoie le lien Wave Business (montant pré-rempli) |
+| `/admin` | **Espace admin** : les admins nommés valident ou refusent les paiements |
+
+### Mode actuel : lien Wave Business + validation par un admin
+
+Dialaw TV n'a pas l'API Wave : l'utilisateur paie avec le lien marchand
+(`WAVE_PAYMENT_LINK`, par défaut celui de Dialaw TV). Un admin ouvre
+`https://dialaw-tv-api.onrender.com/admin`, retrouve le paiement dans l'application Wave
+Business (même numéro, même montant) et appuie sur **Valider** : 1 ou 12 mois sont
+ajoutés. Chaque décision garde le nom de l'admin.
+
+- **Propriétaire** : se connecte avec n'importe quel nom et `ADMIN_MASTER_PASSWORD`
+  (variable Render) ; lui seul nomme et retire les admins.
+- **Admins** : nom + mot de passe (10 caractères minimum) donnés par le propriétaire.
+- Sécurité : mots de passe chiffrés (scrypt), session signée de 12 h (`SESSION_SECRET`),
+  formulaires d'autres sites refusés, 5 essais de connexion par 15 min.
+- Base : exécuter aussi [`migrations/002_paiement_par_lien.sql`](migrations/002_paiement_par_lien.sql).
+
+Les routes `/api/checkout` et `/api/wave-webhook` (paiement automatique par l'API
+Wave) restent prêtes si Wave accorde un jour l'accès à l'API.
 
 Hébergé sur **Render** (service web Node : `npm start` lance [`server.js`](server.js)).
 Les routes de [`api/`](api/) sont branchées sur le serveur HTTP dans [`app.js`](app.js).

@@ -148,15 +148,21 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   void _openSubscription() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => SubscriptionPage(subscription: widget.subscription),
+        builder: (_) => SubscriptionPage(
+          subscription: widget.subscription,
+          defaultPhone: widget.settings.phone,
+        ),
       ),
     );
   }
 
-  /// Rappel affiché sur le direct pendant l'essai.
+  /// Rappel affiché sur le direct pendant l'essai, ou paiement en vérification.
   String? _accessNote() {
     final sub = widget.subscription;
     if (!sub.enabled || sub.info?.status != AccessStatus.trial) return null;
+    if (sub.info!.paymentPending) {
+      return 'Paiement en cours de vérification par Dialaw TV';
+    }
     final days = sub.daysLeft ?? 0;
     return days <= 1
         ? 'Essai gratuit : dernier jour. Abonnez-vous dès 1 000 FCFA/mois'
@@ -257,6 +263,8 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
                       onOpenContacts: () => _select(2),
                       onRequestCoverage: _openCoverage,
                       locked: !widget.subscription.canWatch,
+                      paymentPending:
+                          widget.subscription.info?.paymentPending ?? false,
                       accessNote: _accessNote(),
                       onSubscribe: _openSubscription,
                     ),

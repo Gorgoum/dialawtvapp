@@ -3,14 +3,17 @@
 // branche ici sur le serveur HTTP de Node.
 import { createServer } from 'node:http';
 
+import { handleAdmin } from './api/admin.js';
 import { POST as access } from './api/access.js';
 import { POST as checkout } from './api/checkout.js';
 import { GET as paiement } from './api/paiement.js';
+import { POST as paymentClaim } from './api/payment-claim.js';
 import { POST as waveWebhook } from './api/wave-webhook.js';
 
 const routes = {
   'POST /api/access': access,
   'POST /api/checkout': checkout,
+  'POST /api/payment-claim': paymentClaim,
   'POST /api/wave-webhook': waveWebhook,
   'GET /api/paiement': paiement,
   // Sonde de Render (healthCheckPath) : répond sans toucher à la base.
@@ -33,7 +36,10 @@ async function readBody(req) {
 export function createApp() {
   return createServer(async (req, res) => {
     const url = new URL(req.url, `https://${req.headers.host ?? 'localhost'}`);
-    const handler = routes[`${req.method} ${url.pathname}`];
+    // /admin et ses sous-pages : routeur dédié (chemins avec identifiants).
+    const handler =
+      routes[`${req.method} ${url.pathname}`] ??
+      (url.pathname === '/admin' || url.pathname.startsWith('/admin/') ? handleAdmin : null);
     let response;
     try {
       if (!handler) {
