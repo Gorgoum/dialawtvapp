@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'config.dart';
@@ -169,6 +170,33 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
         : 'Essai gratuit : $days jours restants. Abonnez-vous dès 1 000 FCFA/mois';
   }
 
+  /// Bouton « S'abonner » du direct : visible tant que l'utilisateur n'est pas
+  /// abonné ni en attente de validation, même avant la réponse du serveur.
+  String? _subscribeLabel() {
+    final sub = widget.subscription;
+    final info = sub.info;
+    if (!sub.enabled || info?.status == AccessStatus.active) return null;
+    if (info?.paymentPending ?? false) return null;
+    return 'S’abonner – dès 1 000 FCFA/mois';
+  }
+
+  /// Ligne d'état de la carte « Mon abonnement ».
+  String? _subscriptionSummary() {
+    final sub = widget.subscription;
+    if (!sub.enabled) return null;
+    final info = sub.info;
+    if (info == null) return 'Voir les formules et payer avec Wave';
+    if (info.paymentPending) return 'Paiement en cours de vérification';
+    final days = sub.daysLeft ?? 0;
+    return switch (info.status) {
+      AccessStatus.active =>
+        'Abonné jusqu’au ${DateFormat('d MMMM y', 'fr').format(info.accessUntil!)}',
+      AccessStatus.trial =>
+        'Essai gratuit : ${days <= 1 ? 'dernier jour' : '$days jours restants'}',
+      AccessStatus.expired => 'Accès expiré : abonnez-vous',
+    };
+  }
+
   void _openCoverage() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -265,6 +293,8 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
                       locked: !widget.subscription.canWatch,
                       paymentPending:
                           widget.subscription.info?.paymentPending ?? false,
+                      subscribeLabel: _subscribeLabel(),
+                      subscriptionSummary: _subscriptionSummary(),
                       accessNote: _accessNote(),
                       onSubscribe: _openSubscription,
                     ),

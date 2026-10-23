@@ -111,6 +111,8 @@ void main() {
       onRequestCoverage: () {},
       accessNote:
           'Essai gratuit : 12 jours restants. Abonnez-vous dès 1 000 FCFA/mois',
+      subscribeLabel: 'S’abonner – dès 1 000 FCFA/mois',
+      subscriptionSummary: 'Essai gratuit : 12 jours restants',
       onSubscribe: () {},
     ),
     'Mon abonnement': () => SubscriptionPage(

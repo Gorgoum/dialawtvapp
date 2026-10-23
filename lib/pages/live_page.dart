@@ -20,6 +20,8 @@ class LivePage extends StatefulWidget {
     this.accessNote,
     this.onSubscribe,
     this.paymentPending = false,
+    this.subscribeLabel,
+    this.subscriptionSummary,
   });
 
   final bool active;
@@ -36,6 +38,12 @@ class LivePage extends StatefulWidget {
 
   /// Paiement envoyé, en attente de validation par un admin.
   final bool paymentPending;
+
+  /// Texte du bouton « S'abonner » sous le lecteur ; null pour le masquer (abonné).
+  final String? subscribeLabel;
+
+  /// État affiché sur la carte « Mon abonnement » ; null pour la masquer.
+  final String? subscriptionSummary;
 
   @override
   State<LivePage> createState() => _LivePageState();
@@ -314,6 +322,22 @@ class _LivePageState extends State<LivePage> with WidgetsBindingObserver {
             );
           },
         ),
+        // Bouton d'abonnement bien visible (masqué une fois abonné).
+        if (widget.subscribeLabel != null && widget.onSubscribe != null) ...[
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFF1DC8F2),
+                foregroundColor: const Color(0xFF0B1F33),
+              ),
+              onPressed: widget.onSubscribe,
+              icon: const Icon(Icons.workspace_premium),
+              label: Text(widget.subscribeLabel!, textAlign: TextAlign.center),
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -340,6 +364,16 @@ class _LivePageState extends State<LivePage> with WidgetsBindingObserver {
       subtitle: 'Faites couvrir votre événement',
       onTap: widget.onRequestCoverage,
     );
+    final summary = widget.subscriptionSummary;
+    final subscription = summary == null || widget.onSubscribe == null
+        ? null
+        : _ShortcutCard(
+            icon: Icons.workspace_premium,
+            color: const Color(0xFF1DC8F2),
+            title: 'Mon abonnement',
+            subtitle: summary,
+            onTap: widget.onSubscribe!,
+          );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -352,6 +386,7 @@ class _LivePageState extends State<LivePage> with WidgetsBindingObserver {
           ),
         ),
         const SizedBox(height: 10),
+        if (subscription != null) ...[subscription, const SizedBox(height: 10)],
         coverage,
         const SizedBox(height: 10),
         if (horizontal)
