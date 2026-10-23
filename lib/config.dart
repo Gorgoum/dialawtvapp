@@ -8,10 +8,10 @@ class AppConfig {
   static const liveStreamUrl =
       'http://livestream.kgsols.com/push/DialawTV/playlist.m3u8';
 
-  /// Serveur des abonnements (dossier server/, déployé sur Vercel), sans « / » final.
+  /// Serveur des abonnements (dossier server/, hébergé sur Render), sans « / » final.
   /// Vide : abonnement désactivé, le direct reste gratuit pour tous.
   /// Remplaçable à la compilation : --dart-define=API_BASE_URL=https://…
-  // TODO: mettre l'adresse Vercel en valeur par défaut une fois le serveur déployé.
+  // TODO: mettre l'adresse Render en valeur par défaut une fois le serveur déployé.
   static const apiBaseUrl = String.fromEnvironment('API_BASE_URL');
 
   static const newsUrl = 'https://dialawactu.com';

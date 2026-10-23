@@ -1,0 +1,24 @@
+# Blueprint Render : Dashboard → New → Blueprint → choisir ce dépôt.
+# Crée le service web de l'API d'abonnement (dossier server/).
+services:
+  - type: web
+    name: dialaw-tv-api
+    runtime: node
+    plan: free
+    # Même région que la base Neon (AWS us-east-2, Ohio).
+    region: ohio
+    rootDir: server
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Valeurs secrètes : demandées par Render à la création, jamais dans Git.
+      - key: DATABASE_URL
+        sync: false
+      - key: WAVE_API_KEY
+        sync: false
+      - key: WAVE_WEBHOOK_SECRET
+        sync: false

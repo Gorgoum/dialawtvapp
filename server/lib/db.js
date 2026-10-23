@@ -2,7 +2,7 @@ import { neon } from '@neondatabase/serverless';
 
 import { TRIAL_DAYS } from './subscription.js';
 
-// Connexion HTTP sans état : adaptée aux fonctions Vercel (pas de pool à gérer).
+// Connexion HTTP sans état (driver Neon) : pas de pool à gérer ni à fermer.
 export const sql = neon(process.env.DATABASE_URL);
 
 /** Enregistre l'appareil au premier contact (début du mois gratuit) et le renvoie. */

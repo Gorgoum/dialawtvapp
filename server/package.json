@@ -1,12 +1,13 @@
 {
   "name": "dialaw-tv-api",
   "private": true,
-  "description": "API de Dialaw TV : essais gratuits et abonnements au direct (Neon + Wave), déployée sur Vercel.",
+  "description": "API de Dialaw TV : essais gratuits et abonnements au direct (Neon + Wave), hébergée sur Render.",
   "type": "module",
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "scripts": {
+    "start": "node server.js",
     "test": "node --test"
   },
   "dependencies": {

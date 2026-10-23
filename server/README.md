@@ -12,22 +12,33 @@ Petit serveur entre l'application, la base **Neon** et **Wave Business** :
 | `POST /api/checkout` | Crée le paiement Wave et renvoie le lien qui ouvre Wave |
 | `POST /api/wave-webhook` | Reçu de Wave quand un paiement est terminé (signature vérifiée) |
 | `GET /api/paiement` | Page affichée après le paiement |
+| `GET /health` | Sonde de santé de Render |
+
+Hébergé sur **Render** (service web Node : `npm start` lance [`server.js`](server.js)).
+Les routes de [`api/`](api/) sont branchées sur le serveur HTTP dans [`app.js`](app.js).
 
 ## Mise en ligne (une seule fois)
 
-1. **Neon** : créer un projet (région Europe), ouvrir *SQL Editor*, coller et exécuter
+1. **Neon** : créer un projet, ouvrir *SQL Editor*, coller et exécuter
    [`schema.sql`](schema.sql). Copier la chaîne de connexion (*Connect*).
-2. **Vercel** : *Add New → Project*, importer le dépôt GitHub, et régler
-   **Root Directory = `server`**. Dans *Environment Variables*, ajouter les variables de
-   [`.env.example`](.env.example) avec les vraies valeurs, puis *Deploy*.
+2. **Render** : *New → Blueprint*, choisir le dépôt GitHub : le fichier
+   [`render.yaml`](../render.yaml) à la racine crée le service `dialaw-tv-api` (dossier
+   `server`, région Ohio comme Neon). Render demande alors les valeurs secrètes de
+   [`.env.example`](.env.example) : coller au moins `DATABASE_URL` (les clés Wave peuvent
+   venir plus tard), puis *Apply*. L'adresse du service ressemble à
+   `https://dialaw-tv-api.onrender.com`.
 3. **Wave Business** (portail business.wave.com → *Développeurs*) :
    - créer une **clé API** avec l'accès *Checkout API* → `WAVE_API_KEY` ;
-   - créer un **webhook** vers `https://<votre-projet>.vercel.app/api/wave-webhook`,
+   - créer un **webhook** vers `https://<service>.onrender.com/api/wave-webhook`,
      méthode de sécurité *signature*, événements `checkout.session.completed` et
      `checkout.session.payment_failed` → secret dans `WAVE_WEBHOOK_SECRET` ;
-   - redéployer sur Vercel après avoir ajouté les variables.
-4. **Application** : mettre l'adresse Vercel dans `apiBaseUrl` de `lib/config.dart`, puis
+   - ajouter ces deux valeurs dans Render → *Environment* : le service redémarre seul.
+4. **Application** : mettre l'adresse Render dans `apiBaseUrl` de `lib/config.dart`, puis
    recompiler. Tant que `apiBaseUrl` est vide, l'abonnement est désactivé (direct gratuit).
+
+> **Offre gratuite de Render** : le service s'endort après 15 min sans requête et met
+> 30 à 50 s à se réveiller. L'application attend jusqu'à 60 s, et Wave renvoie ses
+> notifications si besoin. L'offre payante (*Starter*) supprime cette mise en veille.
 5. **Test réel** : sur un téléphone, payer 1 000 FCFA, vérifier que l'accès passe à
    « Abonné » et que la ligne apparaît dans `payments` avec `status = 'succeeded'`.
 

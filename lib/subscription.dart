@@ -159,7 +159,8 @@ class SubscriptionService extends ChangeNotifier {
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode(body),
         )
-        .timeout(const Duration(seconds: 15));
+        // 60 s : le serveur gratuit de Render peut mettre ~30-50 s à sortir de veille.
+        .timeout(const Duration(seconds: 60));
     final data =
         jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
     if (response.statusCode != 200) {

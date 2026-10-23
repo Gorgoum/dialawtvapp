@@ -10,8 +10,12 @@ export async function readJson(request) {
   }
 }
 
-/** Adresse publique du déploiement, pour les liens de retour de Wave. */
+/**
+ * Adresse publique du serveur, pour les liens de retour de Wave : PUBLIC_URL si
+ * définie, sinon celle que Render fournit (RENDER_EXTERNAL_URL), sinon la requête.
+ */
 export function publicUrl(request) {
-  if (process.env.PUBLIC_URL) return process.env.PUBLIC_URL.replace(/\/$/, '');
+  const url = process.env.PUBLIC_URL || process.env.RENDER_EXTERNAL_URL;
+  if (url) return url.replace(/\/$/, '');
   return new URL(request.url).origin;
 }
