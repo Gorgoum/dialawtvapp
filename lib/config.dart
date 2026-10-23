@@ -11,8 +11,10 @@ class AppConfig {
   /// Serveur des abonnements (dossier server/, hébergé sur Render), sans « / » final.
   /// Vide : abonnement désactivé, le direct reste gratuit pour tous.
   /// Remplaçable à la compilation : --dart-define=API_BASE_URL=https://…
-  // TODO: mettre l'adresse Render en valeur par défaut une fois le serveur déployé.
-  static const apiBaseUrl = String.fromEnvironment('API_BASE_URL');
+  static const apiBaseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://dialaw-tv-api.onrender.com',
+  );
 
   static const newsUrl = 'https://dialawactu.com';
   static const newsHost = 'dialawactu.com';
